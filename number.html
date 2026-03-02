@@ -1,0 +1,454 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🎲 Number Guessing Challenge</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        body {
+            min-height: 100vh;
+            background: linear-gradient(45deg, #ff6b6b, #4ecdc4);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            animation: bgMove 10s infinite alternate;
+        }
+
+        @keyframes bgMove {
+            0% { background: linear-gradient(45deg, #ff6b6b, #4ecdc4); }
+            50% { background: linear-gradient(45deg, #a8e6cf, #ffd3b6); }
+            100% { background: linear-gradient(45deg, #ff8a5c, #b83b5e); }
+        }
+
+        .game-box {
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 50px;
+            padding: 3rem;
+            box-shadow: 0 30px 60px rgba(0, 0, 0, 0.3);
+            max-width: 500px;
+            width: 90%;
+            text-align: center;
+            backdrop-filter: blur(10px);
+            border: 3px solid white;
+            animation: float 3s ease-in-out infinite;
+        }
+
+        @keyframes float {
+            0%, 100% { transform: translateY(0px); }
+            50% { transform: translateY(-10px); }
+        }
+
+        h1 {
+            font-size: 3rem;
+            color: #333;
+            margin-bottom: 1rem;
+            text-shadow: 3px 3px 0 rgba(255,255,255,0.5);
+        }
+
+        .subtitle {
+            font-size: 1.2rem;
+            color: #666;
+            margin-bottom: 2rem;
+            background: #f0f0f0;
+            padding: 0.5rem;
+            border-radius: 50px;
+        }
+
+        .number-display {
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            width: 200px;
+            height: 200px;
+            border-radius: 50%;
+            margin: 0 auto 2rem;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            border: 8px solid white;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.2);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .number-display::before {
+            content: '';
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            background: rgba(255,255,255,0.2);
+            transform: rotate(45deg);
+            animation: shine 3s infinite;
+        }
+
+        @keyframes shine {
+            0% { left: -100%; top: -100%; }
+            100% { left: 100%; top: 100%; }
+        }
+
+        #secretNumber {
+            font-size: 5rem;
+            color: white;
+            text-shadow: 4px 4px 0 rgba(0,0,0,0.2);
+            transition: all 0.3s;
+        }
+
+        .input-section {
+            margin: 2rem 0;
+        }
+
+        .guess-input {
+            width: 150px;
+            padding: 1rem;
+            font-size: 2rem;
+            text-align: center;
+            border: 4px solid #ddd;
+            border-radius: 20px;
+            margin-right: 1rem;
+            outline: none;
+            transition: all 0.3s;
+        }
+
+        .guess-input:focus {
+            border-color: #4ecdc4;
+            transform: scale(1.05);
+        }
+
+        button {
+            padding: 1rem 2rem;
+            font-size: 1.3rem;
+            border: none;
+            border-radius: 20px;
+            background: linear-gradient(135deg, #ff6b6b, #b83b5e);
+            color: white;
+            cursor: pointer;
+            transition: all 0.3s;
+            border: 3px solid transparent;
+            font-weight: bold;
+        }
+
+        button:hover {
+            transform: scale(1.1);
+            border-color: white;
+            box-shadow: 0 10px 20px rgba(0,0,0,0.2);
+        }
+
+        button:active {
+            transform: scale(0.95);
+        }
+
+        .hint-box {
+            background: #f8f9fa;
+            padding: 1.5rem;
+            border-radius: 30px;
+            margin: 2rem 0;
+            border: 3px dashed #4ecdc4;
+        }
+
+        #hint {
+            font-size: 1.8rem;
+            margin-bottom: 0.5rem;
+            min-height: 3rem;
+        }
+
+        .hint-arrow {
+            font-size: 3rem;
+            animation: bounce 1s infinite;
+        }
+
+        @keyframes bounce {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(10px); }
+        }
+
+        .stats {
+            display: flex;
+            justify-content: space-around;
+            margin: 2rem 0;
+            font-size: 1.2rem;
+        }
+
+        .stat {
+            background: #f0f0f0;
+            padding: 1rem;
+            border-radius: 20px;
+            flex: 1;
+            margin: 0 0.5rem;
+        }
+
+        .stat span {
+            display: block;
+            font-size: 2rem;
+            font-weight: bold;
+            color: #ff6b6b;
+        }
+
+        .history {
+            background: #f0f0f0;
+            padding: 1rem;
+            border-radius: 20px;
+            max-height: 100px;
+            overflow-y: auto;
+        }
+
+        .history-item {
+            display: inline-block;
+            background: white;
+            padding: 0.5rem 1rem;
+            margin: 0.2rem;
+            border-radius: 10px;
+            font-weight: bold;
+        }
+
+        .history-item.high {
+            background: #ff9999;
+            color: white;
+        }
+
+        .history-item.low {
+            background: #99ccff;
+            color: white;
+        }
+
+        .history-item.win {
+            background: #99ff99;
+            color: #333;
+        }
+
+        .reset-btn {
+            background: linear-gradient(135deg, #4ecdc4, #2c7a7b);
+            margin-top: 1rem;
+        }
+
+        .celebration {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 1000;
+        }
+
+        .confetti {
+            position: absolute;
+            width: 10px;
+            height: 10px;
+            background: red;
+            animation: confetti 3s ease-out forwards;
+        }
+
+        @keyframes confetti {
+            0% { transform: translateY(-100%) rotate(0deg); opacity: 1; }
+            100% { transform: translateY(100vh) rotate(720deg); opacity: 0; }
+        }
+    </style>
+</head>
+<body>
+    <div class="game-box">
+        <h1>🎯 GUESS ME!</h1>
+        <div class="subtitle">1 से 100 के बीच नंबर ढूंढो</div>
+
+        <div class="number-display">
+            <div id="secretNumber">?</div>
+        </div>
+
+        <div class="input-section">
+            <input type="number" id="guessInput" class="guess-input" min="1" max="100" placeholder="??">
+            <button onclick="makeGuess()">GUESS 🔍</button>
+        </div>
+
+        <div class="hint-box">
+            <div id="hint">✨ कोई नंबर सोचो! ✨</div>
+            <div class="hint-arrow" id="arrow">👇</div>
+        </div>
+
+        <div class="stats">
+            <div class="stat">
+                Attempts
+                <span id="attempts">0</span>
+            </div>
+            <div class="stat">
+                Best Score
+                <span id="bestScore">-</span>
+            </div>
+        </div>
+
+        <div class="history" id="history">
+            <small>तुम्हारे guesses यहाँ दिखेंगे</small>
+        </div>
+
+        <button class="reset-btn" onclick="resetGame()">🔄 नया गेम शुरू करो</button>
+    </div>
+
+    <script>
+        let secretNumber = Math.floor(Math.random() * 100) + 1;
+        let attempts = 0;
+        let bestScore = localStorage.getItem('bestScore') || '-';
+        let gameWon = false;
+        
+        // Show best score on load
+        document.getElementById('bestScore').textContent = bestScore;
+
+        function makeGuess() {
+            if (gameWon) {
+                alert('🎉 तुम जीत चुके हो! नया गेम शुरू करो!');
+                return;
+            }
+
+            const input = document.getElementById('guessInput');
+            const guess = parseInt(input.value);
+            
+            if (!guess || guess < 1 || guess > 100) {
+                alert('⚠️ कृपया 1 से 100 के बीच नंबर दो!');
+                input.value = '';
+                input.focus();
+                return;
+            }
+
+            attempts++;
+            document.getElementById('attempts').textContent = attempts;
+
+            // Add to history
+            addToHistory(guess);
+
+            // Check guess
+            if (guess === secretNumber) {
+                gameWon = true;
+                document.getElementById('secretNumber').textContent = secretNumber;
+                document.getElementById('hint').innerHTML = '🎉 बधाई हो! तुम जीत गए! 🎉';
+                document.getElementById('arrow').innerHTML = '🏆';
+                
+                // Update best score
+                if (bestScore === '-' || attempts < parseInt(bestScore)) {
+                    bestScore = attempts;
+                    localStorage.setItem('bestScore', bestScore);
+                    document.getElementById('bestScore').textContent = bestScore;
+                }
+                
+                // Celebration effect
+                celebrate();
+                
+            } else if (guess < secretNumber) {
+                document.getElementById('hint').innerHTML = '📈 ऊपर जाओ! (बड़ा नंबर सोचो)';
+                document.getElementById('arrow').innerHTML = '⬆️ ⬆️ ⬆️';
+                document.getElementById('secretNumber').style.transform = 'translateY(10px)';
+                setTimeout(() => {
+                    document.getElementById('secretNumber').style.transform = 'translateY(0)';
+                }, 200);
+                
+            } else {
+                document.getElementById('hint').innerHTML = '📉 नीचे आओ! (छोटा नंबर सोचो)';
+                document.getElementById('arrow').innerHTML = '⬇️ ⬇️ ⬇️';
+                document.getElementById('secretNumber').style.transform = 'translateY(-10px)';
+                setTimeout(() => {
+                    document.getElementById('secretNumber').style.transform = 'translateY(0)';
+                }, 200);
+            }
+
+            // Clear input
+            input.value = '';
+            input.focus();
+        }
+
+        function addToHistory(guess) {
+            const historyDiv = document.getElementById('history');
+            const item = document.createElement('span');
+            item.className = 'history-item';
+            
+            if (guess === secretNumber) {
+                item.classList.add('win');
+                item.textContent = `🎉 ${guess}`;
+            } else if (guess < secretNumber) {
+                item.classList.add('low');
+                item.textContent = `⬆️ ${guess}`;
+            } else {
+                item.classList.add('high');
+                item.textContent = `⬇️ ${guess}`;
+            }
+            
+            historyDiv.appendChild(item);
+            
+            // Scroll to show latest
+            historyDiv.scrollTop = historyDiv.scrollHeight;
+            
+            // Remove old items if too many
+            if (historyDiv.children.length > 15) {
+                historyDiv.removeChild(historyDiv.children[0]);
+            }
+        }
+
+        function resetGame() {
+            secretNumber = Math.floor(Math.random() * 100) + 1;
+            attempts = 0;
+            gameWon = false;
+            
+            document.getElementById('secretNumber').textContent = '?';
+            document.getElementById('attempts').textContent = '0';
+            document.getElementById('hint').innerHTML = '✨ कोई नंबर सोचो! ✨';
+            document.getElementById('arrow').innerHTML = '👇';
+            document.getElementById('history').innerHTML = '<small>तुम्हारे guesses यहाँ दिखेंगे</small>';
+            document.getElementById('guessInput').value = '';
+            document.getElementById('guessInput').focus();
+            
+            // Small animation
+            document.querySelector('.game-box').style.transform = 'scale(0.95)';
+            setTimeout(() => {
+                document.querySelector('.game-box').style.transform = 'scale(1)';
+            }, 200);
+        }
+
+        function celebrate() {
+            for (let i = 0; i < 50; i++) {
+                createConfetti();
+            }
+        }
+
+        function createConfetti() {
+            const colors = ['#ff6b6b', '#4ecdc4', '#ffe66d', '#ff9ff6', '#54a0ff'];
+            const confetti = document.createElement('div');
+            confetti.className = 'confetti';
+            confetti.style.left = Math.random() * 100 + '%';
+            confetti.style.animationDelay = Math.random() * 2 + 's';
+            confetti.style.background = colors[Math.floor(Math.random() * colors.length)];
+            confetti.style.width = Math.random() * 15 + 5 + 'px';
+            confetti.style.height = confetti.style.width;
+            
+            document.body.appendChild(confetti);
+            
+            setTimeout(() => {
+                confetti.remove();
+            }, 3000);
+        }
+
+        // Enter key support
+        document.getElementById('guessInput').addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                makeGuess();
+            }
+        });
+
+        // Add some style for history
+        const style = document.createElement('style');
+        style.textContent = `
+            .history {
+                display: flex;
+                flex-wrap: wrap;
+                gap: 5px;
+                align-items: center;
+                justify-content: center;
+            }
+            .history small {
+                width: 100%;
+                color: #999;
+            }
+        `;
+        document.head.appendChild(style);
+    </script>
+</body>
+</html>
